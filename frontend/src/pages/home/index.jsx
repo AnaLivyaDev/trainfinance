@@ -1,7 +1,7 @@
-import { Box, Stack } from "@chakra-ui/react"
-import { Cards } from "./cards"
-import { Navbar } from "./navbar"
-import { TableComponent } from "./table"
+import { Box, Stack } from "@chakra-ui/react";
+import { Cards } from "./cards";
+import { Navbar } from "./navbar";
+import { TableComponent } from "./table";
 import { useState } from "react";
 
 function HomePage() {
@@ -13,7 +13,7 @@ function HomePage() {
 
   return (
     <Stack colorPalette="pink">
-      <Box bg="colorPalette.600" height={240} marginBottom={-44}>
+      <Box bg="yellow.50" height={240} marginBottom={-44}>
         <Navbar />
       </Box>
 
@@ -23,7 +23,7 @@ function HomePage() {
         <TableComponent onStudentChanged={handleStudentChanged} />
       </Stack>
     </Stack>
-  )
+  );
 }
 
-export default HomePage
+export default HomePage;
