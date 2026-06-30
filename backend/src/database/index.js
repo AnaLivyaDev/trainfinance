@@ -5,8 +5,10 @@ const config = require("../config/config");
 const Student = require("../models/Student");
 const Payment = require("../models/Payment");
 
+const environment = process.env.NODE_ENV || "development";
+
 const connection = new Sequelize(
-  config.development
+  config[environment]
 );
 
 const models = [
