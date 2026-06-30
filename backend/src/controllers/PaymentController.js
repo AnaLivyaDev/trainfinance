@@ -46,6 +46,7 @@ class PaymentController {
         referenceMonth,
         paymentDate,
         amount,
+        dueDay: student.dueDay,
       });
 
       return res.status(201).json(payment);
