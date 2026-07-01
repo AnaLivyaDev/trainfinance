@@ -11,8 +11,8 @@ export function Navbar() {
         justifyContent="space-between"
         alignItems="center"
       >
-        <Heading size="md" color="colorPalette.100">
-          MUAY THAI
+        <Heading size="md" color="colorPalette.contrast">
+          TRAIN FINANCE
         </Heading>
 
         <ColorModeButton />

@@ -12,8 +12,8 @@ function HomePage() {
   }
 
   return (
-    <Stack colorPalette="pink">
-      <Box bg="yellow.50" height={240} marginBottom={-44}>
+    <Stack colorPalette="yellow">
+      <Box bg="colorPalette.400" height={240} marginBottom={-44}>
         <Navbar />
       </Box>
 

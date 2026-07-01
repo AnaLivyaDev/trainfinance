@@ -204,7 +204,7 @@ export function TableComponent({ onStudentChanged }) {
                               </Switch.Control>
                               <Switch.Label />
                             </Switch.Root>
-                            Pendente
+                            {paidCurrentMonth ? "Pago" : "Pendente"}
                           </>
                         ) : (
                           "-"
