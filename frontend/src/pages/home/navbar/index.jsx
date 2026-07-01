@@ -11,9 +11,12 @@ export function Navbar() {
         justifyContent="space-between"
         alignItems="center"
       >
-        <Heading size="md" color="colorPalette.contrast">
-          TRAIN FINANCE
-        </Heading>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <img src="/logo.svg" alt="" style={{ width: 50 }} />
+          <Heading size="md" fontWeight="semibold" color="colorPalette.contrast">
+            TRAIN FINANCE
+          </Heading>
+        </div>
 
         <ColorModeButton />
       </Container>
