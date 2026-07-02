@@ -18,6 +18,7 @@ import { toaster } from "../../../components/ui/toaster";
 import { format, getDaysInMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { EditStudentForm } from "../form/edit-form";
+import { StudentHistory } from "../history";
 
 export function TableComponent({ onStudentChanged }) {
   const [students, setStudents] = useState([]);
@@ -97,9 +98,15 @@ export function TableComponent({ onStudentChanged }) {
   const [editModalIsOpen, setEditModalIsOpen] = useState(false);
   const [studentToEdit, setStudentToEdit] = useState();
   async function handleSelectStudentToEdit(student) {
-    console.log(student);
     setEditModalIsOpen(true);
     setStudentToEdit(student);
+  }
+
+  const [historyModalIsOpen, setHistoryModalIsOpen] = useState(false);
+  const [studentToViewHistory, setStudentToViewHistory] = useState();
+  async function handleSelectStudentToViewHistory(student) {
+    setHistoryModalIsOpen(true);
+    setStudentToViewHistory(student);
   }
 
   return (
@@ -225,7 +232,11 @@ export function TableComponent({ onStudentChanged }) {
                                 >
                                   Editar
                                 </Menu.Item>
-                                <Menu.Item>Histórico</Menu.Item>
+                                <Menu.Item
+                                  onClick={() => handleSelectStudentToViewHistory(s)}
+                                >
+                                  Histórico
+                                </Menu.Item>
                                 <Menu.Item
                                   disabled={isDeleting}
                                   onClick={() => handleDeleteStudent(s.id)}
@@ -250,6 +261,12 @@ export function TableComponent({ onStudentChanged }) {
         setOpen={setEditModalIsOpen}
         student={studentToEdit}
         onSuccess={getStudents}
+      />
+
+      <StudentHistory
+        open={historyModalIsOpen}
+        setOpen={setHistoryModalIsOpen}
+        student={studentToViewHistory}
       />
     </Container>
   );

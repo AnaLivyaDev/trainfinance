@@ -1,6 +1,59 @@
 const Student = require("../models/Student");
 const Payment = require("../models/Payment");
 
+function generateHistory(student, payments) {
+  const history = [];
+
+  const start = new Date(student.createdAt);
+
+  const today = new Date();
+
+  let year = start.getFullYear();
+  let month = start.getMonth() + 1;
+
+  if (
+    student.dueDay &&
+    start.getDate() > student.dueDay
+  ) {
+    month++;
+
+    if (month > 12) {
+      month = 1;
+      year++;
+    }
+  }
+
+  while (
+    year < today.getFullYear() ||
+    (
+      year === today.getFullYear() &&
+      month <= today.getMonth() + 1
+    )
+  ) {
+    const payment = payments.find(
+      (p) =>
+        p.referenceYear === year &&
+        p.referenceMonth === month
+    );
+
+    history.push({
+      year,
+      month,
+      paid: !!payment,
+      payment: payment ?? null,
+    });
+
+    month++;
+
+    if (month > 12) {
+      month = 1;
+      year++;
+    }
+  }
+
+  return history;
+}
+
 class StudentController {
   async create(req, res) {
     try {
@@ -55,11 +108,8 @@ class StudentController {
     try {
       const currentDate = new Date();
 
-      const currentMonth =
-        currentDate.getMonth() + 1;
-
-      const currentYear =
-        currentDate.getFullYear();
+      const currentMonth = currentDate.getMonth() + 1;
+      const currentYear = currentDate.getFullYear();
 
       const students = await Student.findAll({
         include: [
@@ -72,78 +122,87 @@ class StudentController {
         order: [["createdAt", "DESC"]],
       });
 
-      const formattedStudents = students.map(
-        (student) => {
-          const payments = student.payments || [];
+      const formattedStudents = students.map((student) => {
+        const payments = student.payments || [];
 
-          const currentPayment = payments.find(
-            (payment) =>
-              payment.referenceMonth === currentMonth &&
-              payment.referenceYear === currentYear
+        const currentPayment = payments.find(
+          (payment) =>
+            payment.referenceMonth === currentMonth &&
+            payment.referenceYear === currentYear
+        );
+
+        const paidCurrentMonth = !!currentPayment;
+
+        // Mapa para encontrar rapidamente um pagamento pelo mês/ano
+        const paymentsMap = new Map();
+
+        payments.forEach((payment) => {
+          paymentsMap.set(
+            `${payment.referenceYear}-${payment.referenceMonth}`,
+            payment
           );
+        });
 
-          const paidCurrentMonth = !!currentPayment;
+        const createdAt = new Date(student.createdAt);
 
-          const paidMonths = new Set(
-            payments.map(
-              (payment) =>
-                `${payment.referenceYear}-${payment.referenceMonth}`
-            )
-          );
+        let year = createdAt.getFullYear();
+        let month = createdAt.getMonth() + 1;
 
-          const createdAt = new Date(
-            student.createdAt
-          );
+        const admissionDay = createdAt.getDate();
 
-          let year = createdAt.getFullYear();
-          let month = createdAt.getMonth() + 1;
+        // Caso tenha entrado após o vencimento, a primeira cobrança é no mês seguinte
+        if (student.dueDay && admissionDay > student.dueDay) {
+          month++;
 
-          const admissionDay =
-            createdAt.getDate();
-
-          if (
-            student.dueDay &&
-            admissionDay > student.dueDay
-          ) {
-            month++;
-
-            if (month > 12) {
-              month = 1;
-              year++;
-            }
+          if (month > 12) {
+            month = 1;
+            year++;
           }
-
-          let overdueCount = 0;
-
-          while (
-            year < currentYear ||
-            (year === currentYear &&
-              month < currentMonth)
-          ) {
-            const key = `${year}-${month}`;
-
-            if (!paidMonths.has(key)) {
-              overdueCount++;
-            }
-
-            month++;
-
-            if (month > 12) {
-              month = 1;
-              year++;
-            }
-          }
-
-          return {
-            ...student.toJSON(),
-            paidCurrentMonth,
-            currentPaymentId: currentPayment?.id ?? null,
-            hasOverduePayments:
-              overdueCount > 0,
-            overdueCount,
-          };
         }
-      );
+
+        const history = [];
+
+        while (
+          year < currentYear ||
+          (year === currentYear && month <= currentMonth)
+        ) {
+          const key = `${year}-${month}`;
+
+          const payment = paymentsMap.get(key);
+
+          history.push({
+            year,
+            month,
+            paid: !!payment,
+            paymentId: payment?.id ?? null,
+            payment: payment ?? null,
+          });
+
+          month++;
+
+          if (month > 12) {
+            month = 1;
+            year++;
+          }
+        }
+
+        const overdueCount = history.filter(
+          (item) =>
+            !item.paid &&
+            (item.year < currentYear ||
+              (item.year === currentYear &&
+                item.month < currentMonth))
+        ).length;
+
+        return {
+          ...student.toJSON(),
+          paidCurrentMonth,
+          currentPaymentId: currentPayment?.id ?? null,
+          hasOverduePayments: overdueCount > 0,
+          overdueCount,
+          history,
+        };
+      });
 
       return res.json(formattedStudents);
     } catch (error) {
